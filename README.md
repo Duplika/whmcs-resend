@@ -1,5 +1,7 @@
 # Resend API for WHMCS
 
+![Resend API for WHMCS — free and open source, developed by Duplika](https://raw.githubusercontent.com/Duplika/whmcs-resend/main/docs/images/whmcs-resend-hero.jpg)
+
 Send WHMCS transactional emails through the Resend HTTPS API. Developed by [Duplika](https://duplika.com/) and distributed under the MIT license.
 
 **Version 1.0.2. Target environment: WHMCS 9.0.9 with PHP 8.3.**
@@ -18,17 +20,29 @@ The module interface is in English. Customer emails continue to use the language
 
 ## Download and install
 
-Download **`whmcs-resend.zip`** from a [published GitHub Release](https://github.com/Duplika/whmcs-resend/releases). Extract it and upload only its `modules` folder to your WHMCS root directory. Follow [INSTALLATION.md](INSTALLATION.md) to configure and test the provider.
+Download the latest **[whmcs-resend.zip](https://github.com/Duplika/whmcs-resend/releases/latest/download/whmcs-resend.zip)** or browse the [release history](https://github.com/Duplika/whmcs-resend/releases). Extract it and upload only its `modules` folder to your WHMCS root directory. Follow [INSTALLATION.md](INSTALLATION.md) to configure and test the provider.
 
 Use the attached installation ZIP, which contains the module and its documentation. GitHub's automatically generated source archives also contain development files and tests; do not upload those entire archives to your WHMCS web root.
 
-Once a stable release is published, the direct download URL is:
+## Screenshots
 
-```text
-https://github.com/Duplika/whmcs-resend/releases/latest/download/whmcs-resend.zip
-```
+### Select the mail provider
 
-Draft releases are not publicly downloadable. Keep the asset name `whmcs-resend.zip` in each stable release so this URL continues to work.
+Choose **Resend API** in **General Settings → Mail**.
+
+![WHMCS Mail settings with Resend API selected as the outgoing mail provider](https://raw.githubusercontent.com/Duplika/whmcs-resend/main/docs/images/mail-provider.png)
+
+### Configure the API key and test sender
+
+Enter a dedicated sending API key and a test sender address on a domain verified in Resend.
+
+![Resend API key and test sender configuration fields](https://raw.githubusercontent.com/Duplika/whmcs-resend/main/docs/images/api-key-and-sender.png)
+
+### Set retry limits and test the configuration
+
+Adjust the timeout and maximum attempts, then use **Test Configuration** to send a test email to the logged-in administrator.
+
+![Timeout, maximum attempts and configuration-test controls](https://raw.githubusercontent.com/Duplika/whmcs-resend/main/docs/images/retries-and-test.png)
 
 ## Requirements and validation status
 
@@ -36,7 +50,7 @@ Draft releases are not publicly downloadable. Keep the asset name `whmcs-resend.
 - PHP cURL, current CA certificates and outbound HTTPS access to `api.resend.com:443`.
 - Verified sender domains in Resend and a dedicated API key with **Sending access**.
 
-The included offline suite uses WHMCS class and HTTP test doubles. It does **not** establish compatibility with every WHMCS/PHP version or replace testing on a licensed installation. No live Resend delivery or licensed WHMCS integration test was performed as part of this release preparation.
+The included offline suite uses WHMCS class and HTTP test doubles. It does **not** establish compatibility with every WHMCS/PHP version or replace testing on a licensed installation. Duplika has confirmed live email sending on WHMCS 9.0.9 with PHP 8.3. Other version combinations have not been verified.
 
 ## Development
 
