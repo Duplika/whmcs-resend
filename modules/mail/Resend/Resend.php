@@ -27,7 +27,7 @@ class Resend implements SenderModuleInterface
 {
     use DescriptionTrait;
 
-    public const VERSION = '1.0.2';
+    public const VERSION = '1.0.3';
     private static ?\WeakMap $requests = null;
 
     public function getName() { return 'Resend'; }
@@ -96,12 +96,11 @@ class Resend implements SenderModuleInterface
             ];
             // Tags permit letters, numbers, underscores and dashes only.
             $payload['tags'][1]['value'] = str_replace('.', '_', self::VERSION);
-            $id = $this->client($settings)->send($payload, $request);
-            $this->record('accepted', $request, $id);
+            $this->client($settings)->send($payload, $request);
         } catch (\Throwable $error) {
             $safe = $error instanceof MailError ? $error->getMessage()
                 : 'Internal Resend module error. Check the requirements and installation; check Resend before resending.';
-            $this->record('failed', $request, '', $safe);
+            $this->recordFailure($request, $safe);
             // Do not chain an exception that might carry a key, message body or local filename.
             throw new SendFailure($safe . ' Reference: ' . $request);
         }
@@ -148,15 +147,14 @@ class Resend implements SenderModuleInterface
         return self::$requests[$message]['key'];
     }
 
-    private function record(string $status, string $request, string $id = '', string $error = ''): void
+    private function recordFailure(string $request, string $error): void
     {
         try {
             if (function_exists('logActivity')) {
-                \logActivity('Resend API: ' . $status . '; request=' . $request
-                    . ($id !== '' ? '; email_id=' . $id : '') . ($error !== '' ? '; ' . $error : ''));
+                \logActivity('Resend API: failed; request=' . $request . '; ' . $error);
             }
         } catch (\Throwable $ignored) {
-            // A logging failure after acceptance must never trigger another delivery.
+            // A logging failure must not mask the original send failure.
         }
     }
 }

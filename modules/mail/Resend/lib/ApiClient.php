@@ -91,7 +91,7 @@ class ApiClient
                     'Idempotency-Key: ' . $key,
                     'Expect:',
                 ],
-                CURLOPT_USERAGENT => 'Duplika-WHMCS-Resend/1.0.2',
+                CURLOPT_USERAGENT => 'Duplika-WHMCS-Resend/1.0.3',
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_MAXREDIRS => 0,
                 CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,

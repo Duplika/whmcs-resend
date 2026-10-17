@@ -4,7 +4,7 @@
 
 Send WHMCS transactional emails through the Resend HTTPS API. Developed by [Duplika](https://duplika.com/) and distributed under the MIT license.
 
-**Version 1.0.2. Target environment: WHMCS 9.0.9 with PHP 8.3.**
+**Version 1.0.3. Target environment: WHMCS 9.0.9 with PHP 8.3.**
 
 This is a WHMCS **mail provider**, configured under **General Settings → Mail**. It is not activated under Addon Modules. No Composer installation, core changes, hooks or database migrations are required.
 
@@ -14,7 +14,7 @@ This is a WHMCS **mail provider**, configured under **General Settings → Mail*
 - Supports HTML, plain text, To, CC, BCC, Reply-To, support-thread headers and attachments.
 - Retries temporary API failures within a shared 25-second time budget, using the same idempotency key.
 - Provides an English configuration screen, test email and error messages.
-- Records the Resend email identifier in the WHMCS Activity Log without logging email bodies or credentials.
+- Logs failures without email bodies or credentials. Successful sends use WHMCS's existing email history and Activity Log entries, with no duplicate module entry.
 
 The module interface is in English. Customer emails continue to use the language and content of your WHMCS templates.
 
@@ -50,7 +50,7 @@ Adjust the timeout and maximum attempts, then use **Test Configuration** to send
 - PHP cURL, current CA certificates and outbound HTTPS access to `api.resend.com:443`.
 - Verified sender domains in Resend and a dedicated API key with **Sending access**.
 
-The included offline suite uses WHMCS class and HTTP test doubles. It does **not** establish compatibility with every WHMCS/PHP version or replace testing on a licensed installation. Duplika has confirmed live email sending on WHMCS 9.0.9 with PHP 8.3. Other version combinations have not been verified.
+The included offline suite uses WHMCS class and HTTP test doubles. It does **not** establish compatibility with every WHMCS/PHP version or replace testing on a licensed installation. Duplika has confirmed live email sending with an earlier module version on WHMCS 9.0.9 with PHP 8.3. Version 1.0.3 has been validated offline; its logging change still needs a live installation check. Other version combinations have not been verified.
 
 ## Development
 

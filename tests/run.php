@@ -212,13 +212,14 @@ test('No API error body or credentials leaked in exceptions', function () {
     $error = fails(fn() => $client->send(payload(), 'redaction'));
     check(!str_contains($error->getMessage(), TEST_KEY) && !str_contains($error->getMessage(), 'PRIVATE_BODY'));
 });
-test('Provider preserves normal deliveries and logs the Resend identifier', function () {
+test('Provider preserves normal deliveries without adding an Activity Log entry', function () {
+    $logs = $GLOBALS['test_logs'];
     $provider = new TestProvider(); $provider->send(settings(), new Message());
     $sent = json_decode($provider->fake->calls[0]['json'], true);
     check(str_contains($sent['to'][0], 'client@example.net'));
     check($sent['tags'][2]['value'] === 'live');
-    check(str_contains(end($GLOBALS['test_logs']), EMAIL_ID));
-    check(!str_contains(end($GLOBALS['test_logs']), 'client@example.net'));
+    check(count($provider->fake->calls) === 1);
+    check($GLOBALS['test_logs'] === $logs);
 });
 test('Legacy enabled test mode cannot redirect recipients or strip copies and threading', function () {
     $provider = new TestProvider(); $message = new Message();
@@ -269,14 +270,26 @@ test('Changing payload without Message-ID generates a fresh logical request', fu
     $provider->send(settings(), $message); $message->subject = 'New event'; $provider->send(settings(), $message);
     check($provider->fake->calls[0]['key'] !== $provider->fake->calls[1]['key']);
 });
-test('Log failure after API acceptance does not fail or resend', function () {
+test('Log failure does not mask a send failure or trigger another delivery', function () {
     $provider = new TestProvider(); $GLOBALS['test_log_failure'] = true;
-    try { $provider->send(settings(), new Message()); } finally { $GLOBALS['test_log_failure'] = false; }
+    $provider->fake->responses = [response(401, '{}')];
+    try { fails(fn() => $provider->send(settings(), new Message()), SendFailure::class, '401'); }
+    finally { $GLOBALS['test_log_failure'] = false; }
     check(count($provider->fake->calls) === 1);
 });
 test('Provider surfaces SendFailure and preflight configuration errors', function () {
-    $provider = new TestProvider(); $provider->fake->responses = [response(401, '{}')];
-    fails(fn() => $provider->send(settings(), new Message()), SendFailure::class, '401');
+    $logCount = count($GLOBALS['test_logs']);
+    $provider = new TestProvider();
+    $provider->fake->responses = [response(401, json_encode(['message' => 'PRIVATE_BODY ' . TEST_KEY]))];
+    $error = fails(fn() => $provider->send(settings(), new Message()), SendFailure::class, '401');
+    $log = end($GLOBALS['test_logs']);
+    $request = $provider->fake->calls[0]['key'];
+    check(count($GLOBALS['test_logs']) === $logCount + 1);
+    check(str_contains($log, 'Resend API: failed; request=' . $request));
+    check(str_contains($log, '401') && str_contains($error->getMessage(), $request));
+    foreach ([TEST_KEY, 'PRIVATE_BODY', 'client@example.net', 'Invoice'] as $private) {
+        check(!str_contains($log, $private));
+    }
     fails(fn() => $provider->send(settings(['timeout' => '99']), new Message()), SendFailure::class);
     $GLOBALS['test_curl_available'] = false;
     try { fails(fn() => $provider->send(settings(), new Message()), SendFailure::class, 'cURL'); }

@@ -1,6 +1,6 @@
 # Installation and configuration
 
-Resend API for WHMCS, version 1.0.2. Target environment: WHMCS 9.0.9 with PHP 8.3.
+Resend API for WHMCS, version 1.0.3. Target environment: WHMCS 9.0.9 with PHP 8.3.
 
 ## Requirements
 
@@ -66,6 +66,12 @@ Normal emails use the sender, To, CC, BCC and Reply-To supplied by WHMCS. The Te
 
 After these checks, configure the provider in production, verify all senders and send a controlled email to an account you own. Verify the recipient and delivery in Resend, and check the next cron cycle.
 
+## Upgrading from 1.0.2
+
+Back up and replace `modules/mail/Resend/`. Existing API credentials and settings remain unchanged. Version 1.0.3 removes the module's successful-send Activity Log entry; WHMCS continues to record sent emails, and the module still records failures. No configuration or database changes are required. Existing log entries are left intact.
+
+Send a controlled test email and verify it in WHMCS and Resend. No new `Resend API: accepted` entry should appear. If PHP OPcache does not check for changed files, ask your server administrator to reload the relevant PHP process.
+
 ## Upgrading from 1.0.1
 
 Back up and replace `modules/mail/Resend/`, then reopen Configure Mail Provider. Existing API credentials and settings remain unchanged. Version 1.0.2 translates the module interface, test email, errors and documentation into English; it does not change the language of WHMCS templates or sending behavior.
@@ -74,19 +80,21 @@ If PHP OPcache does not check for changed files, ask your server administrator t
 
 ## Upgrading from 1.0.0
 
-Version 1.0.1 removed test-mode recipient redirection. Version 1.0.2 retains that behavior: normal emails use the original WHMCS recipients as soon as PHP loads the updated files. Legacy `test_mode` and `test_to` settings are ignored even if they remain stored.
+Version 1.0.1 removed test-mode recipient redirection. Later versions retain that behavior: normal emails use the original WHMCS recipients as soon as PHP loads the updated files. Legacy `test_mode` and `test_to` settings are ignored even if they remain stored.
 
 Back up and replace `modules/mail/Resend/` and reopen Configure Mail Provider. The old test-mode and test-recipient controls should no longer appear. No database changes or clearing of old settings are necessary. Confirm recipients with an email to your own account. **Test Configuration** remains available and targets only the logged-in administrator.
 
 ## Logs and troubleshooting
 
-Search for `Resend API` in **System Logs → Activity Log**. An accepted request records:
+Successful sends do not create a separate module Activity Log entry. Use WHMCS's normal sent-email records and Resend's dashboard to review them.
+
+For failures, search for `Resend API: failed` in **System Logs → Activity Log**. An entry includes a request reference and a sanitized error:
 
 ```text
-Resend API: accepted; request=whmcs-...; email_id=...
+Resend API: failed; request=whmcs-...; ...
 ```
 
-Use the email identifier to find the request in Resend. The module also adds `source=whmcs`, `module_version=1_0_2`, `mode=live` and a request-reference tag. Its Activity Log entries omit API keys, email bodies, subjects, recipients and attachments. WHMCS email history and Resend's own logs retain their usual behavior.
+The module adds `source=whmcs`, `module_version=1_0_3`, `mode=live` and a request-reference tag to API requests. Failure log entries omit API keys, email bodies, subjects, recipients and attachments. WHMCS email history and Resend's own logs retain their usual behavior.
 
 **Accepted means Resend accepted the API request; it does not confirm delivery to the recipient's server.** Check delivery status in Resend. This version does not receive webhooks or add a delivery dashboard to WHMCS.
 
